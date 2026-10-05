@@ -1,13 +1,15 @@
 ﻿using Api_Maquinaria.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace Api_Maquinaria.AppDbContext
+namespace Api_Maquinaria.Data
 {
     public class AppDbContext : DbContext
     {
-        public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
+        public AppDbContext(DbContextOptions<AppDbContext> options)
+            : base(options)
         {
         }
+
         public DbSet<Equipment> Equipments { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
