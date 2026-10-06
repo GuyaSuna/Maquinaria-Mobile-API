@@ -42,6 +42,8 @@ namespace Api_Maquinaria.Data
             entity.HasIndex(e => e.Code)
                 .IsUnique();
 
+
+
             entity.HasData(
                 new Equipment
                 {

@@ -3,7 +3,7 @@ using Api_Maquinaria.DTOs;
 using Api_Maquinaria.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using MySqlX.XDevAPI;
+
 namespace Api_Maquinaria.Controllers
 {
     [ApiController]
