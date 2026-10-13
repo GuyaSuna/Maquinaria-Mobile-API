@@ -77,7 +77,62 @@ namespace Api_Maquinaria.Controllers
 
             await _context.SaveChangesAsync();
 
-            return Created($"/api/equipamientos/{equipo.Id}", equipo);
+            return Created($"/api/equipments/{equipo.Id}", equipo);
+        }
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Put(string id, EquipmentInput input)
+        {
+            // Buscar el equipamiento
+            var equipo = await _context.Equipments.FindAsync(id);
+
+            if (equipo == null)
+            {
+                return NotFound("Equipamiento inexistente");
+            }
+
+            var code = input.Code.Trim().ToUpperInvariant();
+
+            // Comprobar que otro equipo no tenga el mismo código
+            var repetido = await _context.Equipments
+                .AnyAsync(e => e.Code == code && e.Id != id);
+
+            if (repetido)
+            {
+                return Conflict("El código ya existe");
+            }
+
+            // Actualizar las propiedades
+            equipo.Name = input.Name.Trim();
+            equipo.Code = code;
+            equipo.Location = input.Location.Trim();
+            equipo.Status = input.Status;
+
+            await _context.SaveChangesAsync();
+
+            return Ok(equipo);
+        }
+
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(string id)
+        {
+            var equipo = await _context.Equipments.FindAsync(id);
+
+            if (equipo == null)
+            {
+                return NotFound("Equipamiento inexistente");
+            }
+
+            _context.Equipments.Remove(equipo);
+
+            await _context.SaveChangesAsync();
+
+            return Ok(new
+            {
+                message = "Equipamiento eliminado",
+                id
+            });
         }
     }
 }
