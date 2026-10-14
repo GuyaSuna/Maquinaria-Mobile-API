@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Api_Maquinaria.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/[controller]")] 
     public class EquipmentController : ControllerBase
     {
 
@@ -24,7 +24,6 @@ namespace Api_Maquinaria.Controllers
         {
             var equipments = await _context.Equipments.ToListAsync();
             return Ok(equipments);
-
         }
 
 
@@ -83,7 +82,6 @@ namespace Api_Maquinaria.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> Put(string id, EquipmentInput input)
         {
-            // Buscar el equipamiento
             var equipo = await _context.Equipments.FindAsync(id);
 
             if (equipo == null)
@@ -91,9 +89,8 @@ namespace Api_Maquinaria.Controllers
                 return NotFound("Equipamiento inexistente");
             }
 
-            var code = input.Code.Trim().ToUpperInvariant();
+            var code = input.Code.Trim().ToUpper();
 
-            // Comprobar que otro equipo no tenga el mismo código
             var repetido = await _context.Equipments
                 .AnyAsync(e => e.Code == code && e.Id != id);
 
@@ -102,7 +99,6 @@ namespace Api_Maquinaria.Controllers
                 return Conflict("El código ya existe");
             }
 
-            // Actualizar las propiedades
             equipo.Name = input.Name.Trim();
             equipo.Code = code;
             equipo.Location = input.Location.Trim();
