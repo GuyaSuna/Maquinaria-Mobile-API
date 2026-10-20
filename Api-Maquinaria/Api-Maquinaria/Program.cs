@@ -1,4 +1,7 @@
 using Api_Maquinaria.Data;
+using Api_Maquinaria.Interfaces;
+using Api_Maquinaria.Repository;
+using Api_Maquinaria.Service;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -18,6 +21,8 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 });
 
 
+builder.Services.AddScoped<IEquipmentService, EquipmentsService>();
+builder.Services.AddScoped<IEquipmentRepository, EquipmentsRepository>();
 
 var app = builder.Build();
 

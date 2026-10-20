@@ -1,5 +1,6 @@
 ﻿using Api_Maquinaria.Data;
 using Api_Maquinaria.DTOs;
+using Api_Maquinaria.Interfaces;
 using Api_Maquinaria.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -7,128 +8,69 @@ using Microsoft.EntityFrameworkCore;
 namespace Api_Maquinaria.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")] 
+    [Route("api/[controller]")]
     public class EquipmentController : ControllerBase
     {
 
-        private readonly AppDbContext _context;
+        private readonly IEquipmentService _service;
 
-        public EquipmentController(AppDbContext context)
+        public EquipmentController(IEquipmentService service)
         {
-            _context = context;
+            _service = service;
         }
 
 
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public async Task<ActionResult<List<EquipmentReadDto>>> GetAll()
         {
-            var equipments = await _context.Equipments.ToListAsync();
-            return Ok(equipments);
+            var equipos = await _service.GetAllAsync();
+            return Ok(equipos);
         }
-
-
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<Equipment>> GetEquipmentById(string id)
+        public async Task<ActionResult<EquipmentReadDto>> GetById(string id)
         {
-
-            var equipment = await _context.Equipments.FindAsync(id);
-
-            if (equipment == null)
+            try
             {
-                return NotFound(
-                    $"No se encontró el equipo con ID {id}."
-                );
-            }
+            var equipo = await _service.GetByIdAsync(id);
 
-            return Ok(equipment);
+            return Ok(equipo);
+            }catch(KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }catch (Exception ex)
+            {
+                return StatusCode(500, "Error interno del servidor");
+            }
         }
 
-
         [HttpPost]
-        public async Task<IActionResult> Post(EquipmentInput input)
+        public async Task<ActionResult<EquipmentReadDto>> Post(
+            [FromBody] EquipmentCreateDto dto)
         {
-            var code = input.Code.Trim().ToUpperInvariant();
-
-            if (await _context.Equipments.AnyAsync(e => e.Code == code))
-            {
-                return Conflict("El código ya existe");
-            }
-
-            var ids = await _context.Equipments
-                .Select(e => e.Id)
-                .ToListAsync();
-
-            var numeros = ids.Select(id => int.Parse(id.Substring(3)));
-
-            var siguiente = numeros.DefaultIfEmpty(0).Max() + 1;
-
-            var equipo = new Equipment
-            {
-                Id = "eq-" + siguiente,
-                Name = input.Name.Trim(),
-                Code = code,
-                Location = input.Location.Trim(),
-                Status = input.Status
-            };
-
-            _context.Equipments.Add(equipo);
-
-            await _context.SaveChangesAsync();
-
-            return Created($"/api/equipments/{equipo.Id}", equipo);
+            var equipo = await _service.CreateAsync(dto);
+            if (equipo == null) return Conflict("El código ya existe");
+            return Created($"/api/equipment/{equipo.Id}", equipo);
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Put(string id, EquipmentInput input)
+        public async Task<IActionResult> Put(
+            string id, [FromBody] EquipmentUpdateDto dto)
         {
-            var equipo = await _context.Equipments.FindAsync(id);
-
-            if (equipo == null)
-            {
+            var resultado = await _service.UpdateAsync(id, dto);
+            if (resultado == EquipmentUpdateResult.NotFound)
                 return NotFound("Equipamiento inexistente");
-            }
-
-            var code = input.Code.Trim().ToUpper();
-
-            var repetido = await _context.Equipments
-                .AnyAsync(e => e.Code == code && e.Id != id);
-
-            if (repetido)
-            {
+            if (resultado == EquipmentUpdateResult.DuplicateCode)
                 return Conflict("El código ya existe");
-            }
-
-            equipo.Name = input.Name.Trim();
-            equipo.Code = code;
-            equipo.Location = input.Location.Trim();
-            equipo.Status = input.Status;
-
-            await _context.SaveChangesAsync();
-
-            return Ok(equipo);
+            return NoContent();
         }
-
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(string id)
         {
-            var equipo = await _context.Equipments.FindAsync(id);
-
-            if (equipo == null)
-            {
-                return NotFound("Equipamiento inexistente");
-            }
-
-            _context.Equipments.Remove(equipo);
-
-            await _context.SaveChangesAsync();
-
-            return Ok(new
-            {
-                message = "Equipamiento eliminado",
-                id
-            });
+            var eliminado = await _service.DeleteAsync(id);
+            if (!eliminado) return NotFound("Equipamiento inexistente");
+            return NoContent();
         }
     }
 }
