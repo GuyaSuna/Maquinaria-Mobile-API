@@ -48,10 +48,20 @@ namespace Api_Maquinaria.Controllers
         public async Task<ActionResult<EquipmentReadDto>> Post(
             [FromBody] EquipmentCreateDto dto)
         {
+            try
+            {
             var equipo = await _service.CreateAsync(dto);
-            if (equipo == null) return Conflict("El código ya existe");
-            return Created($"/api/equipment/{equipo.Id}", equipo);
-        }
+            return Created($"/api/equipment/{equipo?.Id}", equipo);
+            }catch(ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Error interno del servidor");
+
+            }
+         }
 
         [HttpPut("{id}")]
         public async Task<IActionResult> Put(

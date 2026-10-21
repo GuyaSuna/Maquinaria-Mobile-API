@@ -54,6 +54,7 @@ namespace Api_Maquinaria.Service
         public async Task<EquipmentReadDto?> CreateAsync(
             EquipmentCreateDto dto)
         {
+            Validar(dto);
             var code = dto.Code.Trim().ToUpper();
             var repetido = await _repository.CodeExistsAsync(code);
             if (repetido) return null;
@@ -72,9 +73,9 @@ namespace Api_Maquinaria.Service
             string id, EquipmentUpdateDto dto)
         {
             var equipo = await _repository.GetByIdAsync(id);
-            if (equipo == null) return EquipmentUpdateResult.NotFound;
+            if (equipo == null) throw new KeyNotFoundException($"No se encontró el equipamiento con id {id}");
 
-            var code = dto.Code.Trim().ToUpperInvariant();
+            var code = dto.Code.Trim().ToUpper();
             var repetido = await _repository.CodeExistsAsync(code, id);
             if (repetido) return EquipmentUpdateResult.DuplicateCode;
 
@@ -94,11 +95,23 @@ namespace Api_Maquinaria.Service
             return true;
         }
 
-        public void Validar(Equipment equipment)
+        public void Validar(EquipmentCreateDto dto)
         {
-            if (string.IsNullOrWhiteSpace(equipment.Name))
+            if (string.IsNullOrWhiteSpace(dto.Name))
             {
                 throw new ArgumentException("El nombre del equipamiento no puede estar vacío.");
+            }
+            if (string.IsNullOrWhiteSpace(dto.Code))
+            {
+                throw new ArgumentException("El código del equipamiento no puede estar vacío.");
+            }
+            if(string.IsNullOrWhiteSpace(dto.Location))
+            {
+                throw new ArgumentException("La ubicación del equipamiento no puede estar vacía.");
+            }
+            if (string.IsNullOrWhiteSpace(dto.Status))
+            {
+                throw new ArgumentException("El estado del equipamiento no puede estar vacío.");
             }
         }
     }
