@@ -32,7 +32,7 @@ namespace Api_Maquinaria.Service
             {
                 Id = id,
                 Name = dto.Name.Trim(),
-                Code = dto.Code.Trim().ToUpperInvariant(),
+                Code = dto.Code.Trim().ToUpper(),
                 Location = dto.Location.Trim(),
                 Status = dto.Status
             };
@@ -57,7 +57,7 @@ namespace Api_Maquinaria.Service
             Validar(dto);
             var code = dto.Code.Trim().ToUpper();
             var repetido = await _repository.CodeExistsAsync(code);
-            if (repetido) return null;
+            if (repetido) throw new ArgumentException($"Ya existe un equipamiento con el código {code}");
 
             var ids = await _repository.GetIdsAsync();
             var numeros = ids.Select(id => int.Parse(id.Substring(3)));

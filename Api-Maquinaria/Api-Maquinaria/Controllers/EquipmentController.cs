@@ -32,12 +32,15 @@ namespace Api_Maquinaria.Controllers
         {
             try
             {
+
             var equipo = await _service.GetByIdAsync(id);
 
             return Ok(equipo);
+
             }catch(KeyNotFoundException ex)
             {
                 return NotFound(ex.Message);
+            
             }catch (Exception ex)
             {
                 return StatusCode(500, "Error interno del servidor");
