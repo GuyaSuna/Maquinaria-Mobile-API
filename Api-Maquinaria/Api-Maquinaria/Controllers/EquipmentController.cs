@@ -1,9 +1,6 @@
-﻿using Api_Maquinaria.Data;
-using Api_Maquinaria.DTOs;
+﻿using Api_Maquinaria.DTOs;
 using Api_Maquinaria.Interfaces;
-using Api_Maquinaria.Models;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace Api_Maquinaria.Controllers
 {
@@ -11,7 +8,6 @@ namespace Api_Maquinaria.Controllers
     [Route("api/[controller]")]
     public class EquipmentController : ControllerBase
     {
-
         private readonly IEquipmentService _service;
 
         public EquipmentController(IEquipmentService service)
@@ -19,12 +15,18 @@ namespace Api_Maquinaria.Controllers
             _service = service;
         }
 
-
         [HttpGet]
         public async Task<ActionResult<List<EquipmentReadDto>>> GetAll()
         {
-            var equipos = await _service.GetAllAsync();
-            return Ok(equipos);
+            try
+            {
+                var equipos = await _service.GetAllAsync();
+                return Ok(equipos);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "Error interno del servidor");
+            }
         }
 
         [HttpGet("{id}")]
@@ -32,16 +34,18 @@ namespace Api_Maquinaria.Controllers
         {
             try
             {
-
-            var equipo = await _service.GetByIdAsync(id);
-
-            return Ok(equipo);
-
-            }catch(KeyNotFoundException ex)
+                var equipo = await _service.GetByIdAsync(id);
+                return Ok(equipo);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (KeyNotFoundException ex)
             {
                 return NotFound(ex.Message);
-            
-            }catch (Exception ex)
+            }
+            catch (Exception)
             {
                 return StatusCode(500, "Error interno del servidor");
             }
@@ -53,37 +57,77 @@ namespace Api_Maquinaria.Controllers
         {
             try
             {
-            var equipo = await _service.CreateAsync(dto);
-            return Created($"/api/equipment/{equipo?.Id}", equipo);
-            }catch(ArgumentException ex)
+                var equipo = await _service.CreateAsync(dto);
+
+                return Created(
+                    $"/api/equipment/{equipo.Id}",
+                    equipo
+                );
+            }
+            catch (ArgumentException ex)
             {
                 return BadRequest(ex.Message);
             }
-            catch (Exception ex)
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(ex.Message);
+            }
+            catch (Exception)
             {
                 return StatusCode(500, "Error interno del servidor");
-
             }
-         }
+        }
 
         [HttpPut("{id}")]
         public async Task<IActionResult> Put(
-            string id, [FromBody] EquipmentUpdateDto dto)
+            string id,
+            [FromBody] EquipmentUpdateDto dto)
         {
-            var resultado = await _service.UpdateAsync(id, dto);
-            if (resultado == EquipmentUpdateResult.NotFound)
-                return NotFound("Equipamiento inexistente");
-            if (resultado == EquipmentUpdateResult.DuplicateCode)
-                return Conflict("El código ya existe");
-            return NoContent();
+            try
+            {
+                await _service.UpdateAsync(id, dto);
+
+                return NoContent();
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(ex.Message);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "Error interno del servidor");
+            }
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(string id)
         {
-            var eliminado = await _service.DeleteAsync(id);
-            if (!eliminado) return NotFound("Equipamiento inexistente");
-            return NoContent();
+            try
+            {
+                await _service.DeleteAsync(id);
+
+                return NoContent();
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "Error interno del servidor");
+            }
         }
     }
 }

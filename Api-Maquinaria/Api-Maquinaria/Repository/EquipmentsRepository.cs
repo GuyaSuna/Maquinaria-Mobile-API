@@ -16,7 +16,8 @@ namespace Api_Maquinaria.Repository
 
         public async Task<List<Equipment>> GetAllAsync()
         {
-            return await _context.Equipments.ToListAsync();
+            return await _context.Equipments
+                .ToListAsync();
         }
 
         public async Task<Equipment?> GetByIdAsync(string id)
@@ -28,17 +29,21 @@ namespace Api_Maquinaria.Repository
             string code, string? excludeId = null)
         {
             return await _context.Equipments.AnyAsync(
-                e => e.Code == code && e.Id != excludeId);
+                e => e.Code == code && e.Id != excludeId
+            );
         }
 
         public async Task<List<string>> GetIdsAsync()
         {
-            return await _context.Equipments.Select(e => e.Id).ToListAsync();
+            return await _context.Equipments
+                .Select(e => e.Id)
+                .ToListAsync();
         }
 
         public async Task AddAsync(Equipment equipment)
         {
-            _context.Equipments.Add(equipment);
+            await _context.Equipments.AddAsync(equipment);
+
             await _context.SaveChangesAsync();
         }
 
@@ -50,6 +55,7 @@ namespace Api_Maquinaria.Repository
         public async Task DeleteAsync(Equipment equipment)
         {
             _context.Equipments.Remove(equipment);
+
             await _context.SaveChangesAsync();
         }
     }

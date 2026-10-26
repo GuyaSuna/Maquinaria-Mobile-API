@@ -6,7 +6,6 @@ namespace Api_Maquinaria.Service
 {
     public class EquipmentsService : IEquipmentService
     {
-
         private readonly IEquipmentRepository _repository;
 
         public EquipmentsService(IEquipmentRepository repository)
@@ -26,92 +25,187 @@ namespace Api_Maquinaria.Service
             };
         }
 
-        private static Equipment ToEntity(EquipmentCreateDto dto, string id)
+        private static Equipment ToEntity(
+            EquipmentCreateDto dto, string id)
         {
             return new Equipment
             {
                 Id = id,
                 Name = dto.Name.Trim(),
-                Code = dto.Code.Trim().ToUpper(),
+                Code = dto.Code.Trim().ToUpperInvariant(),
                 Location = dto.Location.Trim(),
-                Status = dto.Status
+                Status = dto.Status.Trim()
             };
         }
 
         public async Task<List<EquipmentReadDto>> GetAllAsync()
         {
             var equipos = await _repository.GetAllAsync();
+
             return equipos.Select(e => ToReadDto(e)).ToList();
         }
 
-        public async Task<EquipmentReadDto?> GetByIdAsync(string id)
+        public async Task<EquipmentReadDto> GetByIdAsync(string id)
         {
+            ValidarId(id);
+
             var equipo = await _repository.GetByIdAsync(id);
-            if (equipo == null) throw new KeyNotFoundException($"No se encontró el equipamiento con id {id}");
+
+            if (equipo == null)
+            {
+                throw new KeyNotFoundException(
+                    $"No se encontró el equipamiento con ID {id}");
+            }
+
             return ToReadDto(equipo);
         }
 
-        public async Task<EquipmentReadDto?> CreateAsync(
+        public async Task<EquipmentReadDto> CreateAsync(
             EquipmentCreateDto dto)
         {
-            Validar(dto);
-            var code = dto.Code.Trim().ToUpper();
+            if (dto == null)
+            {
+                throw new ArgumentException(
+                    "Los datos del equipamiento son obligatorios.");
+            }
+
+            ValidarDatos(
+                dto.Name,
+                dto.Code,
+                dto.Location,
+                dto.Status
+            );
+
+            var code = dto.Code.Trim().ToUpperInvariant();
+
             var repetido = await _repository.CodeExistsAsync(code);
-            if (repetido) throw new ArgumentException($"Ya existe un equipamiento con el código {code}");
+
+            if (repetido)
+            {
+                throw new InvalidOperationException(
+                    $"Ya existe un equipamiento con el código {code}");
+            }
 
             var ids = await _repository.GetIdsAsync();
-            var numeros = ids.Select(id => int.Parse(id.Substring(3)));
+
+            var numeros = new List<int>();
+
+            foreach (var id in ids)
+            {
+                if (id.StartsWith("eq-") &&
+                    int.TryParse(id.Substring(3), out int numero))
+                {
+                    numeros.Add(numero);
+                }
+            }
+
             var siguiente = numeros.DefaultIfEmpty(0).Max() + 1;
+
             var nuevoId = "eq-" + siguiente;
+
             var equipo = ToEntity(dto, nuevoId);
 
             await _repository.AddAsync(equipo);
+
             return ToReadDto(equipo);
         }
 
-        public async Task<EquipmentUpdateResult> UpdateAsync(
+        public async Task UpdateAsync(
             string id, EquipmentUpdateDto dto)
         {
-            var equipo = await _repository.GetByIdAsync(id);
-            if (equipo == null) throw new KeyNotFoundException($"No se encontró el equipamiento con id {id}");
+            ValidarId(id);
 
-            var code = dto.Code.Trim().ToUpper();
+            if (dto == null)
+            {
+                throw new ArgumentException(
+                    "Los datos del equipamiento son obligatorios.");
+            }
+
+            ValidarDatos(
+                dto.Name,
+                dto.Code,
+                dto.Location,
+                dto.Status
+            );
+
+            var equipo = await _repository.GetByIdAsync(id);
+
+            if (equipo == null)
+            {
+                throw new KeyNotFoundException(
+                    $"No se encontró el equipamiento con ID {id}");
+            }
+
+            var code = dto.Code.Trim().ToUpperInvariant();
+
             var repetido = await _repository.CodeExistsAsync(code, id);
-            if (repetido) return EquipmentUpdateResult.DuplicateCode;
+
+            if (repetido)
+            {
+                throw new InvalidOperationException(
+                    $"Ya existe un equipamiento con el código {code}");
+            }
 
             equipo.Name = dto.Name.Trim();
             equipo.Code = code;
             equipo.Location = dto.Location.Trim();
-            equipo.Status = dto.Status;
+            equipo.Status = dto.Status.Trim();
+
             await _repository.UpdateAsync(equipo);
-            return EquipmentUpdateResult.Success;
         }
 
-        public async Task<bool> DeleteAsync(string id)
+        public async Task DeleteAsync(string id)
         {
+            ValidarId(id);
+
             var equipo = await _repository.GetByIdAsync(id);
-            if (equipo == null) return false;
+
+            if (equipo == null)
+            {
+                throw new KeyNotFoundException(
+                    $"No se encontró el equipamiento con ID {id}");
+            }
+
             await _repository.DeleteAsync(equipo);
-            return true;
         }
 
-        public void Validar(EquipmentCreateDto dto)
+        private static void ValidarId(string id)
         {
-            if (string.IsNullOrWhiteSpace(dto.Name))
+            if (string.IsNullOrWhiteSpace(id))
             {
-                throw new ArgumentException("El nombre del equipamiento no puede estar vacío.");
+                throw new ArgumentException(
+                    "El ID del equipamiento es obligatorio.");
             }
-            if (string.IsNullOrWhiteSpace(dto.Code))
+        }
+
+        private static void ValidarDatos(
+            string name,
+            string code,
+            string location,
+            string status)
+        {
+            if (string.IsNullOrWhiteSpace(name))
             {
-                throw new ArgumentException("El código del equipamiento no puede estar vacío.");
+                throw new ArgumentException(
+                    "El nombre del equipamiento no puede estar vacío.");
             }
-            if(string.IsNullOrWhiteSpace(dto.Location))
+
+            if (string.IsNullOrWhiteSpace(code))
             {
-                throw new ArgumentException("La ubicación del equipamiento no puede estar vacía.");
+                throw new ArgumentException(
+                    "El código del equipamiento no puede estar vacío.");
             }
-            if (string.IsNullOrWhiteSpace(dto.Status))
+
+            if (string.IsNullOrWhiteSpace(location))
             {
-                throw new ArgumentException("El estado del equipamiento no puede estar vacío.");
+                throw new ArgumentException(
+                    "La ubicación del equipamiento no puede estar vacía.");
+            }
+
+            if (string.IsNullOrWhiteSpace(status))
+            {
+                throw new ArgumentException(
+                    "El estado del equipamiento no puede estar vacío.");
             }
         }
     }
