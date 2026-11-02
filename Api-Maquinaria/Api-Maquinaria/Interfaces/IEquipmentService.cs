@@ -16,5 +16,11 @@ namespace Api_Maquinaria.Interfaces
             EquipmentUpdateDto dto);
 
         Task DeleteAsync(string id);
+
+
+        Task UpdateImageAsync(
+    string id,
+    string imageUrl,
+    string imageKey);
     }
 }

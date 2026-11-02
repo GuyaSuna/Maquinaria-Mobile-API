@@ -13,6 +13,7 @@ namespace Api_Maquinaria.Service
             _repository = repository;
         }
 
+
         private static EquipmentReadDto ToReadDto(Equipment equipo)
         {
             return new EquipmentReadDto
@@ -21,9 +22,11 @@ namespace Api_Maquinaria.Service
                 Name = equipo.Name,
                 Code = equipo.Code,
                 Location = equipo.Location,
-                Status = equipo.Status
+                Status = equipo.Status,
+                ImageUrl = equipo.ImageUrl
             };
         }
+
 
         private static Equipment ToEntity(
             EquipmentCreateDto dto, string id)
@@ -208,5 +211,35 @@ namespace Api_Maquinaria.Service
                     "El estado del equipamiento no puede estar vacío.");
             }
         }
+
+
+        public async Task UpdateImageAsync(
+            string id,
+            string imageUrl,
+            string imageKey)
+        {
+            ValidarId(id);
+
+            if (string.IsNullOrWhiteSpace(imageUrl) ||
+                string.IsNullOrWhiteSpace(imageKey))
+            {
+                throw new ArgumentException(
+                    "La información de la imagen es obligatoria.");
+            }
+
+            var equipo = await _repository.GetByIdAsync(id);
+
+            if (equipo == null)
+            {
+                throw new KeyNotFoundException(
+                    $"No se encontró el equipamiento con ID {id}");
+            }
+
+            equipo.ImageUrl = imageUrl;
+            equipo.ImageKey = imageKey;
+
+            await _repository.UpdateAsync(equipo);
+        }
+
     }
 }

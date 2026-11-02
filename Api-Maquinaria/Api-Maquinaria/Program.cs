@@ -2,7 +2,12 @@ using Api_Maquinaria.Data;
 using Api_Maquinaria.Interfaces;
 using Api_Maquinaria.Repository;
 using Api_Maquinaria.Service;
+using DotNetEnv;
 using Microsoft.EntityFrameworkCore;
+
+
+
+Env.Load();
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,6 +17,9 @@ builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
+
+
+builder.Services.AddHttpClient<UploadthingService>();
 
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
@@ -38,4 +46,8 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+
 app.Run();
+
+
+

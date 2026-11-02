@@ -9,10 +9,11 @@ namespace Api_Maquinaria.Controllers
     public class EquipmentController : ControllerBase
     {
         private readonly IEquipmentService _service;
-
-        public EquipmentController(IEquipmentService service)
+        private readonly UploadthingService _uploadService;
+        public EquipmentController(IEquipmentService service, UploadthingService uploadService)
         {
             _service = service;
+            _uploadService = uploadService;
         }
 
         [HttpGet]
@@ -129,5 +130,79 @@ namespace Api_Maquinaria.Controllers
                 return StatusCode(500, "Error interno del servidor");
             }
         }
+
+
+        [HttpPost("{id}/imagen")]
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> UploadImage(
+            string id,
+           [FromForm] IFormFile file)
+        {
+            try
+            {
+                var equipo = await _service.GetByIdAsync(id);
+
+                if (file == null || file.Length == 0)
+                {
+                    return BadRequest("Debe seleccionar una imagen.");
+                }
+
+                if (file.Length > 5 * 1024 * 1024)
+                {
+                    return BadRequest(
+                        "La imagen no puede superar los 5 MB.");
+                }
+
+                string[] tiposPermitidos =
+                {
+            "image/jpeg",
+            "image/png",
+            "image/webp"
+        };
+
+                if (!tiposPermitidos.Contains(file.ContentType))
+                {
+                    return BadRequest(
+                        "Solo se permiten imágenes JPG, PNG y WEBP.");
+                }
+
+
+                using var stream = file.OpenReadStream();
+
+                var resultado = await _uploadService.UploadAsync(
+                    stream,
+                    file.FileName,
+                    file.ContentType,
+                    file.Length
+                );
+
+                await _service.UpdateImageAsync(
+                    id,
+                    resultado.Url,
+                    resultado.Key
+                );
+
+                return Ok(new
+                {
+                    Message = "Imagen subida correctamente",
+                    ImageUrl = resultado.Url
+                });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception)
+            {
+                return StatusCode(
+                    500,
+                    "Error al subir la imagen.");
+            }
+        }
+
     }
 }

@@ -11,5 +11,8 @@
         public string Location { get; set; } = string.Empty;
 
         public string Status { get; set; } = "Operativo";
+
+        public string ImageUrl { get; set; } = string.Empty;
+        public string ImageKey { get; set; } = string.Empty;
     }
 }

@@ -29,6 +29,14 @@ namespace Api_Maquinaria.Migrations
                         .HasMaxLength(30)
                         .HasColumnType("varchar(30)");
 
+                    b.Property<string>("ImageKey")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("ImageUrl")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
                     b.Property<string>("Location")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -56,6 +64,8 @@ namespace Api_Maquinaria.Migrations
                         {
                             Id = "eq-1",
                             Code = "BOM-001",
+                            ImageKey = "",
+                            ImageUrl = "",
                             Location = "Sala de máquinas",
                             Name = "Bomba centrífuga 01",
                             Status = "Operativo"
@@ -64,6 +74,8 @@ namespace Api_Maquinaria.Migrations
                         {
                             Id = "eq-2",
                             Code = "COM-002",
+                            ImageKey = "",
+                            ImageUrl = "",
                             Location = "Taller",
                             Name = "Compresor A2",
                             Status = "En mantenimiento"
@@ -72,6 +84,8 @@ namespace Api_Maquinaria.Migrations
                         {
                             Id = "eq-3",
                             Code = "TAB-003",
+                            ImageKey = "",
+                            ImageUrl = "",
                             Location = "Depósito",
                             Name = "Tablero eléctrico Norte",
                             Status = "Operativo"
