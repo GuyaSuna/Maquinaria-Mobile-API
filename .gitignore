@@ -2,7 +2,10 @@
 **/.vs/
 *.user
 *.suo
+*.env
 
 # Archivos generados al compilar
 **/bin/
 **/obj/
+Api-Maquinaria/Api-Maquinaria/.env
+Api-Maquinaria/Api-Maquinaria/.env
