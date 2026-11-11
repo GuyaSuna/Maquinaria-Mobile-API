@@ -1,6 +1,7 @@
 ﻿using Api_Maquinaria.DTOs;
 using Api_Maquinaria.Interfaces;
 using Api_Maquinaria.Models;
+using Api_Maquinaria.Repository;
 
 namespace Api_Maquinaria.Service
 {
@@ -240,6 +241,63 @@ namespace Api_Maquinaria.Service
 
             await _repository.UpdateAsync(equipo);
         }
+
+
+
+
+        public async Task<PaginaResultadoDto> BuscarAsync(
+            string? nombre,
+            string? estado,
+            string? ubicacion,
+            int pagina,
+            int tamano)
+        {
+
+            if (pagina < 1)
+            {
+                throw new ArgumentException(
+                    "La página debe ser mayor o igual a 1.");
+            }
+
+            if (tamano < 1 || tamano > 50)
+            {
+                throw new ArgumentException(
+                    "El tamaño debe estar entre 1 y 50.");
+            }
+
+            if (!string.IsNullOrWhiteSpace(estado) && estado != "Operativo" &&
+                estado != "En mantenimiento")
+            {
+                throw new ArgumentException(
+                    "El estado debe ser Operativo o En mantenimiento.");
+            }
+
+            return await _repository.BuscarAsync(
+                nombre?.Trim(),
+                estado?.Trim(),
+                ubicacion?.Trim(),
+                pagina,
+                tamano
+            );
+        }
+
+
+
+        public void PruebaOut()
+        {
+            int a = 10;
+            int b = 3;
+            int resultado = Division(a, b, out int resto);
+            Console.WriteLine($"Resultado: {resultado}");
+            Console.WriteLine($"Resto: {resto}");
+        }
+
+        public int Division(int a , int b , out int resto)
+        {
+            resto = a % b;
+            return a / b;
+        }
+
 
     }
 }

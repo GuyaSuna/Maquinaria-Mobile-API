@@ -1,4 +1,5 @@
-﻿using Api_Maquinaria.Models;
+﻿using Api_Maquinaria.DTOs;
+using Api_Maquinaria.Models;
 
 namespace Api_Maquinaria.Interfaces
 {
@@ -11,5 +12,12 @@ namespace Api_Maquinaria.Interfaces
         Task AddAsync(Equipment equipment);
         Task UpdateAsync(Equipment equipment);
         Task DeleteAsync(Equipment equipment);
+        Task<PaginaResultadoDto> BuscarAsync(
+            string? nombre,
+            string? estado,
+            string? ubicacion,
+            int pagina,
+            int tamano
+        );
     }
 }

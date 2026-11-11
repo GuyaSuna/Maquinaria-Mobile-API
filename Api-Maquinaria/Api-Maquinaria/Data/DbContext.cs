@@ -11,6 +11,7 @@ namespace Api_Maquinaria.Data
         }
 
         public DbSet<Equipment> Equipments { get; set; }
+        public DbSet<PagoRevision> PagosRevision { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

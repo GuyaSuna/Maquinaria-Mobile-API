@@ -19,8 +19,16 @@ namespace Api_Maquinaria.Interfaces
 
 
         Task UpdateImageAsync(
-    string id,
-    string imageUrl,
-    string imageKey);
+            string id,
+            string imageUrl,
+            string imageKey
+            );
+
+        Task<PaginaResultadoDto> BuscarAsync(string? nombre,string? estado,
+            string? ubicacion,
+            int pagina,
+            int tamano
+            );
     }
+
 }

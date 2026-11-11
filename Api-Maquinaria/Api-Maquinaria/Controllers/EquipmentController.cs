@@ -1,5 +1,6 @@
 ﻿using Api_Maquinaria.DTOs;
 using Api_Maquinaria.Interfaces;
+using Api_Maquinaria.Service;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api_Maquinaria.Controllers
@@ -29,6 +30,34 @@ namespace Api_Maquinaria.Controllers
                 return StatusCode(500, "Error interno del servidor");
             }
         }
+
+
+        [HttpGet("buscar")]
+        public async Task<IActionResult> Buscar(
+            [FromQuery] string? nombre = null,
+            [FromQuery] string? estado = null,
+            [FromQuery] string? ubicacion = null,
+            [FromQuery] int pagina = 1,
+            [FromQuery] int tamano = 5)
+        {
+            try
+            {
+                var resultado = await _service.BuscarAsync(
+                    nombre,
+                    estado,
+                    ubicacion,
+                    pagina,
+                    tamano
+                );
+
+                return Ok(resultado);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
 
         [HttpGet("{id}")]
         public async Task<ActionResult<EquipmentReadDto>> GetById(string id)
