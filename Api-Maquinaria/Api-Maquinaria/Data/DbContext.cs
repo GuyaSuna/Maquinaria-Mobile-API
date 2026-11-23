@@ -11,6 +11,7 @@ namespace Api_Maquinaria.Data
         }
 
         public DbSet<Equipment> Equipments { get; set; }
+        public DbSet<Usuario> Usuarios { get; set; }
         public DbSet<PagoRevision> PagosRevision { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -71,6 +72,20 @@ namespace Api_Maquinaria.Data
                     Status = "Operativo"
                 }
             );
+
+
+            modelBuilder.Entity<Usuario>()
+                .HasIndex(u => u.Email)
+                .IsUnique();
+
+            modelBuilder.Entity<Usuario>()
+                .Property(u => u.Email)
+                .HasMaxLength(150);
+
+            modelBuilder.Entity<Usuario>()
+                .Property(u => u.Rol)
+                .HasMaxLength(30);
+
         }
     }
 }

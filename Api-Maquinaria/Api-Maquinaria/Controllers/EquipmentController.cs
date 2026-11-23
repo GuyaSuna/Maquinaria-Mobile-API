@@ -2,10 +2,12 @@
 using Api_Maquinaria.Interfaces;
 using Api_Maquinaria.Service;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Api_Maquinaria.Controllers
 {
     [ApiController]
+    [Authorize]
     [Route("api/[controller]")]
     public class EquipmentController : ControllerBase
     {
@@ -18,6 +20,7 @@ namespace Api_Maquinaria.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = "Administrador")]
         public async Task<ActionResult<List<EquipmentReadDto>>> GetAll()
         {
             try
@@ -30,7 +33,6 @@ namespace Api_Maquinaria.Controllers
                 return StatusCode(500, "Error interno del servidor");
             }
         }
-
 
         [HttpGet("buscar")]
         public async Task<IActionResult> Buscar(
