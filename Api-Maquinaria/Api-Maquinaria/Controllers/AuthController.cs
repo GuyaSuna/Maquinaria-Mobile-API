@@ -19,8 +19,7 @@ public class AuthController : ControllerBase
 
     [AllowAnonymous]
     [HttpPost("login")]
-    public async Task<IActionResult> Login(
-     LoginRequestDto request)
+    public async Task<IActionResult> Login(LoginRequestDto request)
     {
         try
         {

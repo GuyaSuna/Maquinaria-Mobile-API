@@ -32,7 +32,7 @@ namespace Api_Maquinaria.Service
         {
             ValidarDatos(request);
 
-            var email = request.Email.Trim().ToLowerInvariant();
+            var email = request.Email.Trim().ToLower();
 
             var usuario = await _repository.GetByEmailAsync(email);
 
